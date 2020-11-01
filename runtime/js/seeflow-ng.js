@@ -130,7 +130,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               wdg.texture = src + (isholo ? "#edge=repeat" : "?edge=repeat");
               wdg.shader  = shd;
               wdg.decal   = false;
-              wdg.opacity = scope.data.physical ? 0.9 * intensity : 0.9 ;
+              
+              //force physical into phantom mode; for digital, ue whatever is already set
+              if (scope.data.physical) 
+                wdg.opacity = 0.9 * intensity;
             }
           }
         

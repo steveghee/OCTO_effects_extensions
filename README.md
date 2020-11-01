@@ -21,6 +21,21 @@ for presenting flow velocity (direction,speed).  Importantly, the widget does NO
 
 The widget uses this mapping to then visualise the flow.  
 
+#### Usage
+Drag/drop the Flow widget into your scene. Identify then elements of your model that you wish to indicate there is some flow action going on. Assign Model Items to these elements.
+In the Flow widget enter the IDs of the various modelitems in the 'Affects' field. This accepts a comma-separated list of IDs.  
+
+If your AR experience is based around a physical product, using a Model Target for example, set the Physical Model property to true (check the box).  The Flow widget will disply the simulated flow in a way that woks well for physical overlay.
+
+The U.V Velocity fields describe how the flow image moves over time.  UV mapping is described separately but in essence the surface is mapped against two parameters (u,v) and the Velocity settings define the speed and direction that the
+mapped image will move along these parameters.  
+
+Repeats (U) and (V) are similar; the default value of 1 means the applied image would appear once on a surface.  Change the values of Repeats (U) and (V) to show more or fewer.
+
+The Intensity property can be used to dial back the flow effect, making it blend in better. This is particularly useful on physical products.
+
+The Image property allows you to specify a visual representation of your flow. A simple example might be an arrow that points in the direction of flow.
+
 ### See Inside
 This widget will control the effect of showing selected parts (model items) that are located within some physical or virtual object.
 
