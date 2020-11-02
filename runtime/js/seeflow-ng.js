@@ -134,6 +134,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               //force physical into phantom mode; for digital, ue whatever is already set
               if (scope.data.physical) 
                 wdg.opacity = 0.9 * intensity;
+              //otherwise use whatever was set on entry  
+              else
+                wdg.opacity = scope.data.capture[b].opacity;
+                
             }
           }
         
