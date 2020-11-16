@@ -36,6 +36,23 @@ The Intensity property can be used to dial back the flow effect, making it blend
 
 The Image property allows you to specify a visual representation of your flow. A simple example might be an arrow that points in the direction of flow.
 
+### Flipbook Animation
+This widget provides the means to do simple flipbook / stop motion animation where a series of images are presented onto a surface, one at a time.  The resulting effect is the impression of animation as each of the images changes.
+
+#### Usage
+Drag/drop the Flipbook widget into your scene. Identify then elements of your model that you wish to indicate there is some animation going on. ModelItems and Images are supported.
+In the Flipbook widget, enter the IDs of the various modelitems/images in the 'Affects' field. This accepts a comma-separated list of IDs.  
+
+If your AR experience is based around a physical product, using a Model Target for example, set the Physical Model property to true (check the box).  
+
+The Speed field controls the relative spped of the animation. 
+Direction defines the order that the images are applied.  
+The Intensity property can be used to dial back the flow effect, making it blend in better. This is particularly useful on physical products.
+
+The Image property references an image that contains you animation. The animation is defined as a series of 'frames', which are stored inside the image, effectively one image 
+next to the previous, increasing in width.  The Frames property should be set to indicate the number of frames included in the image.
+!(zoetrope.jpg)
+
 ### See Inside
 This widget will control the effect of showing selected parts (model items) that are located within some physical or virtual object.
 
