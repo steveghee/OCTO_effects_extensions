@@ -45,13 +45,13 @@ In the Flipbook widget, enter the IDs of the various modelitems/images in the 'A
 
 If your AR experience is based around a physical product, using a Model Target for example, set the Physical Model property to true (check the box).  
 
-The Speed field controls the relative spped of the animation. 
+The Speed field controls the frequencey of the animation i.e. how quickly the images change. 
 Direction defines the order that the images are applied.  
 The Intensity property can be used to dial back the flow effect, making it blend in better. This is particularly useful on physical products.
 
 The Image property references an image that contains you animation. The animation is defined as a series of 'frames', which are stored inside the image, effectively one image 
 next to the previous, increasing in width.  The Frames property should be set to indicate the number of frames included in the image.
-!(zoetrope.jpg)
+!["image missing?"](./zoetrope.jpg "example")
 
 ### See Inside
 This widget will control the effect of showing selected parts (model items) that are located within some physical or virtual object.
