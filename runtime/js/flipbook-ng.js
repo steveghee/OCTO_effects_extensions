@@ -113,7 +113,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
               var isholo = !twx.app.isPreview() && (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
               var shd    = flipshader(";blend f "     + blend + 
                                       ";rate f "      + rate +
-                                      ";fade f "      + intensity + 
+                                      ";intensity f "      + intensity + 
                                       ";direction f " + direction +
                                       ";frames f "    + frame);
               var wdg    = scope.$parent.view.wdg[b];
