@@ -31,6 +31,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         disable        : false,
                         physicaldigital: true,
                         xray           : false,
+                        transition     : undefined,
+                        transit        : undefined,
+                        blend          : undefined,
+                        promise        : undefined,
                         capture        : {}
                     };
                     function isbool(v) {
@@ -43,13 +47,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                     }
                     function desatshader() {
                         var isholo = !twx.app.isPreview() && (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
-                        var shader = isholo?"desaturatedhl" : "desaturatedgl";
+                        var shader = (isholo?"desaturatedhl;blend f " : "desaturatedgl;blend f ") + scope.data.blend;
+                        console.log('shader = '+shader);
                         return shader;
                     }
                     
                     function restore(b) {
                       if(scope.$parent.view.wdg[b]!=undefined && scope.data.capture[b] != undefined) {                      
                         var wdg = scope.$parent.view.wdg[b];
+                        console.log('restore '+b+'->'+JSON.stringify(scope.data.capture[b]));                     
                         for(var a in scope.data.capture[b]) 
                           wdg[a] = scope.data.capture[b][a];
                       }
@@ -60,7 +66,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         scope.data.capture[b] = { shader: wdg.shader, 
                                                  visible: wdg.visible, 
                                                  opacity: wdg.opacity, 
-                                                   decal: wdg.decal };
+                                                 decal: wdg.decal };
+                        console.log('capture '+b+'='+JSON.stringify(scope.data.capture[b]));
                         return true;
                       }
                       return false;                     
@@ -80,6 +87,32 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         }
                       }
                     }
+                    
+                    function against_looped(list,effect,transition) {
+                      if (scope.data.transit != undefined) 
+                        $interval.cancel(scope.data.transit);
+                      scope.data.transit = $interval(function(list,effect) {
+                                                     var l=list;
+                                                     var e=effect;
+                                                     var v=scope.data.transition;
+                                                     var d=v>0?-0.1:0.1;
+                                                     var s=scope;
+                                                     return function() {
+                        if (l.length > 0) {
+                          scope.data.blend = v;                                   
+                          for (var x=0;x<l.length;x++) {
+                            var a = l[x];
+                            e(a.trim()); 
+                          }
+                        }
+                        v=v+d;
+                        if (v<0 || v>1) {
+                          s.data.transition=undefined;
+                          $interval.cancel(s.data.transit);}
+                        }
+                      }(list,effect),66);//30fps - should likely be less on HL
+                    }
+                      
                     var recordlist = function(list) {
                       var ilist = scope[list].split(','); 
                       scope.data[list]=[];  
@@ -93,16 +126,30 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
 
                         var reset = force!=undefined && force===true || scope.data.disable === true;
                         
-                        function dohide(b) {
+                        if (scope.data.promise != undefined) $timeout.cancel(scope.data.promise); 
+                        scope.data.promise = undefined;
+                        
+                        function dohide2(b) {
                           if(scope.$parent.view.wdg[b]!=undefined) {
+                            var wdg     = scope.$parent.view.wdg[b];
+                            wdg.shader  = "discardedgl";
+                            wdg.decal   = false;
+                            wdg.opacity = 1.0;
+                            wdg.visible = true;
+                          }
+                        }
+                        function dohide(b) {
+                          var isholo = !twx.app.isPreview() && (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
+                          if (!isholo) dohide2(b);
+                          else if(scope.$parent.view.wdg[b]!=undefined) {
                             scope.$parent.view.wdg[b].visible = reset;
                           }
                         }
                         function dodefault(b) {
                           if(scope.$parent.view.wdg[b]!=undefined) {
                             var wdg     = scope.$parent.view.wdg[b];
-                            wdg.shader  = "Default";
-                            wdg.decal   = "false";
+                            wdg.shader  = "Default"; //undo the shader
+                            wdg.decal   = false;
                             wdg.opacity = 1.0;
                             wdg.visible = true;
                           }
@@ -112,7 +159,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                           if(scope.$parent.view.wdg[b]!=undefined) {
                             var wdg     = scope.$parent.view.wdg[b];
                             wdg.shader  = "Default";
-                            wdg.decal   = "false";
+                            wdg.decal   = false;
                             wdg.opacity = 0.8;
                             wdg.visible = true;
                           }
@@ -120,11 +167,15 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         function dodesaturate(b) {
                           if(reset) dodefault(b);  
                           else if(scope.$parent.view.wdg[b]!=undefined) {
+                            var v       = scope.data.blend;  
                             var wdg     = scope.$parent.view.wdg[b];
-                            wdg.visible = "true" ;
-                            wdg.shader  = desatshader();
+                            wdg.visible = true ;
+                            var b       = v != undefined ? v : 1;
+                            wdg.shader  = desatshader(b);
                             wdg.decal   = false;
-                            wdg.opacity = 0.35 * (1 - scope.attenuateField);
+                            // result   = x + (y-x).b, assuming b normalised 0..1
+                            var tween   = 0.35 + (1 - 0.35) * b;
+                            wdg.opacity = tween * (1 - scope.attenuateField);
                           }
                         }
                         function doxray(b) {
@@ -143,7 +194,10 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         }
                       
                         function apply(outerfn,innerfn) {
-                          against(scope.data.outer, outerfn);
+                          if (scope.data.transition != undefined)
+                            against_looped(scope.data.outer, outerfn,scope. data.transition);
+                          else                            
+                            against(scope.data.outer, outerfn);
                           against(scope.data.inner, innerfn);
                         }
                     
@@ -207,10 +261,16 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         {updateEffects();}
                 
                     
-                    var executeEffects= function(){
-                      if (scope.data.disable === false) $timeout(function () {
-                        updateEffects();
-                      }, 1);
+                    var executeEffects= function(transition) {
+                      //if we are signalled a transition is required, record it here      
+                      if (transition != undefined) scope.data.transition = transition ? 1 : 0;      
+                      
+                      if (scope.data.disable === false && scope.data.promise === undefined) {
+                        scope.data.promise = $timeout(function () {
+                          scope.data.promise = undefined;
+                          updateEffects();
+                        }, 10);
+                      }
                     };
                   
                     scope.$watch('disableField', function () {
@@ -218,6 +278,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                       
                       if (scope.data.disable === true) {
                           
+                        scope.data.blend = 1;  
                         // reset the outer/inner lists to the original settings  
                         resetlist('inner');
                         resetlist('outer');
@@ -229,7 +290,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         recordlist('inner');
                         
                         // and re-apply
-                        executeEffects();
+                        executeEffects(true);
                       }
                     });
                     
@@ -255,7 +316,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                         recordlist(list);
                         
                         // 3. finally, apply new settings to sanitised list
-                        executeEffects();
+                        var transition = (scope.data.disable === false && (scope.data.blend === undefined || scope.data.blend < 1)) ? true : undefined;
+                        executeEffects(transition);
                       }
                     }
                         
