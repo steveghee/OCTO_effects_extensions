@@ -49,12 +49,28 @@ The Speed field controls the frequencey of the animation i.e. how quickly the im
 Direction defines the order that the images are applied.  
 The Intensity property can be used to dial back the flow effect, making it blend in better. This is particularly useful on physical products.
 
-The Image property references an image that contains you animation. The animation is defined as a series of 'frames', which are stored inside the image, effectively one image 
-next to the previous, increasing in width.  The Frames property should be set to indicate the number of frames included in the image.
+The Image property references an image that contains you animation. The animation is defined as a series of 'frames', which are stored 
+inside the image, effectively one image next to the previous, increasing in width.  The Frames property should be set to indicate the 
+number of frames included in the image.
 !["image missing?"](./zoetrope.jpg "example")
 
 ### See Inside
 This widget will control the effect of showing selected parts (model items) that are located within some physical or virtual object.
+Note there is a specific (designed!) difference between how this effect manifests itself for physical AR i.e. when there is a real 
+physical item that is being observed. In this case, the 'inside' effect is shown but now outer model is shown. In a pure virtual AR 
+example, the outer items are shown in a desaturated appearance; this helps call attention not to the outer elements, but to the items 
+that are specified of interest inside.. 
+
+#### Usage
+Define the model items that make up the interior that you wish to see - these are specified as a comma-separate list in the 'inner' field.
+Likewise, use the 'outer' field to specify which model or model items make up the exterior. 
+I your product is a physical target, check the 'physical box'.  
+
+There are two methods for showing items inside. One is a psuedo X-Ray effect, the other is a semi-tranluscent solid. The x-ray works well for physical products, the solid for virtual,  You can try them both out and see wihch suits your experience the best.
+
+Near fade and far fade control how the 'inside' effect appears to the user; near fade specifies the distance at which the effect starts to
+fade out (disappear) - this i s useful to prevent users gettign too close to a physical object.  The far fade controls when the effect actually
+appears; setting a value here can simulate the inside view appear as the user walks up to an object.  Distances are in meters. 
 
 ### See Reflection
 This widget will apply a reflection effect to specified model parts.
