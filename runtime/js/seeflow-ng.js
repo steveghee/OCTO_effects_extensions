@@ -18,6 +18,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         sc2Field      : '@',
         srcField      : '@',
         affects       : '@',
+        envField      : '@',
+        envrotateField: '@',
         intensityField: '@',
         physicalField : '@',
         disableField  : '@'
@@ -36,6 +38,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           du       : 0, 
           dv       : 0,    
           src      : '',
+          env      : '',
+          rot      : 0,
           intensity: 1,
           physical : true
         };
@@ -45,6 +49,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         function flowshader(params) {
           var isholo = !twx.app.isPreview() && (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
           var shader = isholo?"flow_onedir_scale_hl"+params : "flow_onedir_scale_gl"+params;
+          if (scope.data.env.length>0)
+            shader="reflectoflow_gl;mixer f 0.25;envrotate f "+scope.data.rot+params;
           return shader;
         }
         function restore(b) {
@@ -127,7 +133,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
                                       ";sc1 f "  + sc1  + ";sc2 f "  + sc2);
               var wdg    = scope.$parent.view.wdg[b];
               
+              
+                
               wdg.texture = src + (isholo ? "#edge=repeat" : "?edge=repeat");
+              if (scope.data.env.length>1)
+                wdg.texture = wdg.texture + " " + scope.data.env + "?name=envSampler2D&edge=repeat";
+              
               wdg.shader  = shd;
               wdg.decal   = false;
               
@@ -218,6 +229,12 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
         scope.$watch('srcField', function () {
           scope.data.src  = (scope.srcField  != undefined) ? scope.srcField : '';
+          executeEffects();
+        });
+            
+        scope.$watchGroup(['envField','envrotateField'], function () {
+          scope.data.env  = (scope.envField  != undefined) ? scope.envField : '';
+          scope.data.rot  = parseFloat(scope.envrotateField) / 360;
           executeEffects();
         });
             
