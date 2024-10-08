@@ -21,6 +21,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         envField      : '@',
         envrotateField: '@',
         intensityField: '@',
+        shineField    : '@',
         physicalField : '@',
         disableField  : '@'
       },
@@ -28,6 +29,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
       link: function(scope, element, attr) {
         var lastUpdated = 'unknown';
         scope.data = {
+          running  : false,
           disable  : false,
           capture  : {} , 
           affects  : {},
@@ -41,16 +43,20 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           env      : '',
           rot      : 0,
           intensity: 1,
+          shine    : 0.5,
           physical : true
         };
+      
         function isbool(v) {
           return (v==='true')||v===true;
         }
         function flowshader(params) {
           var isholo = !twx.app.isPreview() && (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
           var shader = isholo?"flow_onedir_scale_hl"+params : "flow_onedir_scale_gl"+params;
-          if (scope.data.env.length>0)
-            shader="reflectoflow_gl;mixer f 0.25;envrotate f "+scope.data.rot+params;
+          if (scope.data.env.length>0) {
+              var fshine = 0.5 * scope.data.shine;
+              shader="reflectoflow_gl;shine f "+fshine+";envrotate f "+scope.data.rot+params;
+              }
           return shader;
         }
         function restore(b) {
@@ -97,8 +103,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           against(scope.data[list],restore);
         }
         var updateEffects = function(force) {
-        var reset = force!=undefined && force===true || scope.data.disable === true;
             
+          var reset = force!=undefined && force===true || scope.data.disable === true;
             
           function setdefault(b) {
             if(scope.$parent.view.wdg[b]!=undefined) {
@@ -156,6 +162,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             against(scope.data.affects, affectsfn);
           }
           
+          if (!scope.data.running) return;
+          
           if (scope.disableField == "true") {
             // set default shader when Disable == true
             apply(setdefault);
@@ -176,8 +184,7 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
         var executeEffects= function(){
           if (scope.data.disable === false) $timeout(function () {
             updateEffects();
-          }
-                                                     , 1);
+          }, 1);
         };
         scope.$watch('affects', function () {
           // get the list of names
@@ -217,8 +224,9 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           executeEffects();
         });
             
-        scope.$watch('intensityField', function () {
+        scope.$watchGroup(['intensityField','shineField'], function () {
           scope.data.intensity = parseFloat(scope.intensityField) ;
+          scope.data.shine     = parseFloat(scope.shineField) ;
           executeEffects();
         });
             
@@ -248,6 +256,17 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             executeEffects();
           }
         }
+        
+        scope.data.ev1 = scope.$root.$on("$ionicView.afterEnter", function (event, info) {
+          scope.data.ev2 = scope.$root.$on("$ionicView.beforeLeave", function (event,info) {
+            // clean up
+            scope.data.ev1();
+            scope.data.ev2();
+          });
+          scope.data.running = true;
+          executeEffects();    
+        });
+        
       }
       //
       //
