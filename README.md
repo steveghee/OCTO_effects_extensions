@@ -30,7 +30,9 @@ If your AR experience is based around a physical product, using a Model Target f
 The U.V Velocity fields describe how the flow image moves over time.  UV mapping is described separately but in essence the surface is mapped against two parameters (u,v) and the Velocity settings define the speed and direction that the
 mapped image will move along these parameters.  
 
-Repeats (U) and (V) are similar; the default value of 1 means the applied image would appear once on a surface.  Change the values of Repeats (U) and (V) to show more or fewer.
+Repeats (U) and (V) are similar; the default value of 1 means the applied image would appear once on a surface.  
+Change the values of Repeats (U) and (V) to show more or fewer.
+The deltaUV parameters allow for (small) offsets in the placement of the texture on the surface.
 
 The Intensity property can be used to dial back the flow effect, making it blend in better. This is particularly useful on physical products.
 
