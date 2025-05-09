@@ -90,12 +90,52 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
             
           function setdefault(b) {
             if(scope.$parent.view.wdg[b]!=undefined) {
+                  
+              /*
+                
+              //this would be a better appoach, but unassigning the texture does not correctly
+              //revert back to the original surface texture. when that bug (in view) is fixed, this can be uncommented
+              
               var wdg     = scope.$parent.view.wdg[b];
               wdg.shader  = "Default";
               wdg.decal   = "false";
               wdg.opacity = 1.0;
               wdg.visible = true;
               wdg.texture = "";
+              
+              */
+              
+              //force the shader into "disabled" state where it stops playing 
+              //and reverts to from 0 (direction=1,rate=-1)
+              var frame     = scope.data.frames;
+              var direction =  1.0;    
+              var rate      = -1.0;
+              var src       = scope.data.src ;
+              
+              var intensity = 1.0;
+              var blend     = scope.data.physical ? 0 : 1;
+              
+              var isholo = !twx.app.isPreview() && (scope.isholoField != undefined) ? isbool(scope.isholoField) : false;
+              var shd    = flipshader(";blend f "     + blend + 
+                                      ";rate f "      + rate +
+                                      ";intensity f "      + intensity + 
+                                      ";direction f " + direction +
+                                      ";frames f "    + frame);
+              var wdg    = scope.$parent.view.wdg[b];
+              
+              if (wdg.pivot != undefined)
+                wdg.src     = src + (isholo ? "#edge=repeat" : "?edge=repeat");
+              else
+                wdg.texture = src + (isholo ? "#edge=repeat" : "?edge=repeat");
+              wdg.shader  = shd;
+              wdg.decal   = false;
+              
+              //force physical into phantom mode; for digital, ue whatever is already set
+              if (scope.data.physical) 
+                wdg.opacity = 0.9 * intensity;
+              //otherwise use whatever was set on entry  
+              else
+                wdg.opacity = scope.data.capture[b].opacity;
             }
           }
           
@@ -171,8 +211,8 @@ if (typeof module !== 'undefined' && typeof exports !== 'undefined' && module.ex
           scope.data.disable = (scope.disableField != undefined && scope.disableField === 'true') ? true :false ;
           if (scope.data.disable ===true) {
             // reset the affects lists to the original settings  
-            resetlist('affects');
-           // updateEffects();
+            //resetlist('affects');
+            updateEffects();
           }
           else {
             // recapture this (it may have changed, although binding should have caught that)
